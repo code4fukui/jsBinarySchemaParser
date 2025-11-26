@@ -1,10 +1,7 @@
-import fs from 'fs'
-import { parse } from '../src'
-import { buildStream } from '../src/parsers/uint8'
-import { GIF } from '../src/schemas'
+import { parse } from '../src/index.js'
+import { buildStream } from '../src/parsers/uint8.js'
+import GIF from '../src/schemas/gif.js'
 
-debugger
-
-const data = fs.readFileSync('./example/dog.gif')
+const data = await Deno.readFile('./example/dog.gif')
 const result = parse(buildStream(new Uint8Array(data)), GIF)
 console.log(result)
