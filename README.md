@@ -10,7 +10,7 @@ Basically, you provide a schema object and some data, and it will step through t
 
 _Create a schema and parse a file:_
 
-    import { parse, conditional } from 'https://code4fukui.github.io/jsBinarySchemaParser/index.js'
+    import { parse, conditional } from 'https://code4fukui.github.io/jsBinarySchemaParser/src/index.js'
     import { buildStream, readByte } from 'https://code4fukui.github.io/jsBinarySchemaParser/src/parsers/uint8.js'
 
     const schema = [
