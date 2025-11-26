@@ -10,8 +10,8 @@ Basically, you provide a schema object and some data, and it will step through t
 
 _Create a schema and parse a file:_
 
-    import { parse, conditional } from 'https://code4fukui.github.io/js-binary-schema-parser/index.js'
-    import { buildStream, readByte } from 'https://code4fukui.github.io/js-binary-schema-parser/lib/parsers/uint8.js'
+    import { parse, conditional } from 'https://code4fukui.github.io/jsBinarySchemaParser/index.js'
+    import { buildStream, readByte } from 'https://code4fukui.github.io/jsBinarySchemaParser/src/parsers/uint8.js'
 
     const schema = [
       // part definitions...
@@ -27,7 +27,7 @@ _Create a schema and parse a file:_
 
 So far in this library there is only one built in schema, which is for the GIF format. You can import included schemas like:
 
-    import GIF from 'https://code4fukui.github.io/js-binary-schema-parser/lib/schemas/gif.js'
+    import GIF from 'https://code4fukui.github.io/jsBinarySchemaParser/src/schemas/gif.js'
 
 Schemas are an array of _parts_, which are objects containing a single key label, and the parser to use at that point in time. This format was chosen to ensure parse ordering was consistent. _Parts_ can also contain other parts internally, and include syntax for loops, and conditionals. You can also include your own custom functions for parsing, providing direct access to the given data stream. Below is an example of a schema using the `Uint8TypedArray` parser provided to parse the GIF format header. You can also see a full example [here][2] of parsing entire GIF files.
 
