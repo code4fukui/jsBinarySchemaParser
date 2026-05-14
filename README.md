@@ -1,79 +1,96 @@
-# js Binary Schema Parser
+# jsBinarySchemaParser
 
-Parse binary files in javascript using a schema to convert to plain objects.
+[
+![npm version](https://img.shields.io/npm/v/js-binary-schema-parser.svg)
+](https://www.npmjs.com/package/js-binary-schema-parser)
+[
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+](https://opensource.org/licenses/MIT)
 
-Years ago I needed to parse GIF images for our **[Ruffle][1]** messaging app. While this readme describes how to parse binary files in general, our _[GIF Parser][2]_ library exhibits a full use of this library (including a _[demo][2]_). I suggest looking at the other library for a quick understanding.
+> 日本語のREADMEはこちらです: [README.ja.md](README.ja.md)
 
-Basically, you provide a schema object and some data, and it will step through the binary data, and convert it into the object defined by your schema. Included in this library is a parser for the `Uint8TypedArray`, but it is easy to add them for your own types if necessary. It can parse bytes, arrays, chunks, conditionals, loops, etc.
+A declarative, schema-based binary file parser for JavaScript. Convert binary data into well-structured, readable objects with ease.
 
-### How to Use
+## Features
 
-_Create a schema and parse a file:_
+-   **Declarative Schemas**: Define the structure of your binary data using simple JavaScript objects and functions.
+-   **Complex Structures**: Natively supports nested data, conditionals, and loops for handling dynamic formats.
+-   **Rich Parser Set**: Includes a comprehensive set of built-in parsers for `Uint8Array` streams:
+    -   Read/peek single bytes, byte arrays, and strings.
+    -   Parse unsigned integers (big or little endian).
+    -   Handle bit-level data with a bitmask schema.
+    -   Parse fixed-size or dynamically-sized arrays.
+-   **Lightweight**: Zero dependencies.
+-   **Extensible**: Easily add your own custom parser functions.
+-   **Example Included**: Comes with a complete schema for parsing GIF files.
 
-    import { parse, conditional } from 'https://code4fukui.github.io/jsBinarySchemaParser/src/index.js'
-    import { buildStream, readByte } from 'https://code4fukui.github.io/jsBinarySchemaParser/src/parsers/uint8.js'
+## Installation
 
-    const schema = [
-      // part definitions...
-      { someKey: readByte() }
-    ];
+Install using npm:
 
-    // get the input file data
-    const data = new Uint8Array(fileArrayBuffer);
-    // create a stream object and parse it
-    const parsedObject = parse(buildStream(data), schema)
+```bash
+npm install js-binary-schema-parser
+```
 
-### Schemas
+Alternatively, for browsers or Deno, you can import it directly:
 
-So far in this library there is only one built in schema, which is for the GIF format. You can import included schemas like:
+```javascript
+import { parse } from 'https://code4fukui.github.io/jsBinarySchemaParser/src/index.js';
+import { buildStream, readByte } from 'https://code4fukui.github.io/jsBinarySchemaParser/src/parsers/uint8.js';
+```
 
-    import GIF from 'https://code4fukui.github.io/jsBinarySchemaParser/src/schemas/gif.js'
+## Quick Start
 
-Schemas are an array of _parts_, which are objects containing a single key label, and the parser to use at that point in time. This format was chosen to ensure parse ordering was consistent. _Parts_ can also contain other parts internally, and include syntax for loops, and conditionals. You can also include your own custom functions for parsing, providing direct access to the given data stream. Below is an example of a schema using the `Uint8TypedArray` parser provided to parse the GIF format header. You can also see a full example [here][2] of parsing entire GIF files.
+1.  **Define a schema** for your binary format. A schema is an array of objects, where each object key becomes a key in the final parsed object.
 
-### Example
+2.  **Create a stream** from your `Uint8Array` data using `buildStream`.
 
-    const gifSchema = [
-    	{
-    		label: 'header', // gif header
-    		parts: [
-    			{ label: 'signature', parser: Parsers.readString(3) },
-    			{ label: 'version', parser: Parsers.readString(3) }
-    		]
-    	},{
-    		label: 'lsd', // local screen descriptor
-    		parts: [
-    			{ label: 'width', parser: Parsers.readUnsigned(true) },
-    			{ label: 'height', parser: Parsers.readUnsigned(true) },
-    			{ label: 'gct', bits: {
-    				exists: { index: 0 },
-    				resolution: { index: 1, length: 3 },
-    				sort: { index: 4 },
-    				size: { index: 5, length: 3 }
-    			}},
-    			{ label: 'backgroundColorIndex', parser: Parsers.readByte() },
-    			{ label: 'pixelAspectRatio', parser: Parsers.readByte() }
-    		]
-    	}
-    ];
+3.  **Call `parse`** with the stream and schema.
 
-### Why this parser?
+```javascript
+// For Node.js/npm, adjust import paths if using a bundler or CJS
+import { parse } from 'js-binary-schema-parser/src/index.js';
+import {
+  buildStream,
+  readString,
+  readByte,
+  readUnsigned
+} from 'js-binary-schema-parser/src/parsers/uint8.js';
 
-There are other good parsers around, like [jBinary][4], but we weren't a fan of relying on object key ordering, and defining parser types as strings. This one is also extremely small, and easily exstensible in any way you want.
+// 1. Define a schema for a custom file format.
+const mySchema = [
+  { header: [
+      { signature: readString(3) },      // Reads 3 bytes as a string
+      { version: readByte() }            // Reads the next byte as a number
+  ]},
+  { dataLength: readUnsigned(false) },   // Reads 2 bytes as a big-endian unsigned int
+  // ... add more parsers for the rest of the file
+];
 
-### Demo
+// 2. Create a data source (e.g., from a file or network).
+// This buffer represents: "FOO", version 1, length 256
+const binaryData = new Uint8Array([0x46, 0x4F, 0x4F, 0x01, 0x01, 0x00]);
 
-You can see a full demo **[here][2]** which uses this lib to parse GIF files for manipulation.
+// 3. Create a stream and parse the data.
+const stream = buildStream(binaryData);
+const result = parse(stream, mySchema);
 
-### Who are we?
+console.log(JSON.stringify(result, null, 2));
+/*
+{
+  "header": {
+    "signature": "FOO",
+    "version": 1
+  },
+  "dataLength": 256
+}
+*/
+```
 
-[Matt Way][3] & [Nick Drewe][5]
+## API Reference
 
-[Wethrift.com][6]
+### Core Functions
 
-[1]: https://www.producthunt.com/posts/ruffle
-[2]: https://github.com/matt-way/gifuct-js
-[3]: https://twitter.com/_MattWay
-[4]: https://github.com/jDataView/jBinary
-[5]: https://twitter.com/nickdrewe
-[6]: https://wethrift.com
+These functions are the building blocks for your schemas.
+
+-   `parse(stream, schema)`: The main parsing function. It
